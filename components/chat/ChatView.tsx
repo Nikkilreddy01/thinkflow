@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { useGraph } from "@/context/GraphContext";
 import { SelectableText } from "@/components/SelectableText";
 import { BranchPreviewDrawer } from "./BranchPreviewDrawer";
-import { SelectionToolbar } from "@/components/SelectionToolbar";
 import { PROVIDER_REGISTRY } from "@/lib/models";
 import {
   Bot,
@@ -643,9 +642,6 @@ export function ChatView() {
 
       {/* Slide-over Branch Preview Drawer */}
       <BranchPreviewDrawer />
-
-      {/* Floating Selection Toolbar */}
-      <SelectionToolbar />
     </div>
   );
 }

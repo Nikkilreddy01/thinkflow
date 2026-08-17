@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useGraph } from "@/context/GraphContext";
 import { SelectableText } from "./SelectableText";
-import { SelectionToolbar } from "./SelectionToolbar";
 import {
   ArrowLeft,
   ChevronRight,
@@ -227,9 +226,6 @@ export function FocusModeModal() {
           </form>
         </div>
       </div>
-
-      {/* Floating Toolbar within focus modal */}
-      <SelectionToolbar />
     </div>
   );
 }

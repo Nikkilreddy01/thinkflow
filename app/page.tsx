@@ -7,12 +7,13 @@ import { Navbar } from "@/components/Navbar";
 import { ChatView } from "@/components/chat/ChatView";
 import { CanvasView } from "@/components/canvas/CanvasView";
 import { FocusModeModal } from "@/components/FocusModeModal";
+import { SelectionToolbar } from "@/components/SelectionToolbar";
 
 function MainApp() {
   const { viewMode } = useGraph();
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#212121] text-white font-sans antialiased select-none">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#212121] text-white font-sans antialiased select-none relative">
       {/* Left Sidebar */}
       <Sidebar />
 
@@ -37,6 +38,9 @@ function MainApp() {
 
       {/* Focus Mode Overlay (Maximized on Double Click) */}
       <FocusModeModal />
+
+      {/* Single Global Selection Toolbar instance */}
+      <SelectionToolbar />
     </div>
   );
 }

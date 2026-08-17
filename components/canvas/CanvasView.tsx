@@ -23,7 +23,6 @@ import { UserNode } from "./UserNode";
 import { AssistantNode } from "./AssistantNode";
 import { ExplorationNode } from "./ExplorationNode";
 import { AnchorEdge } from "./AnchorEdge";
-import { SelectionToolbar } from "@/components/SelectionToolbar";
 import { PROVIDER_REGISTRY } from "@/lib/models";
 import {
   LayoutDashboard,
@@ -653,9 +652,6 @@ function CanvasFlowInner() {
           </div>
         </div>
       </div>
-
-      {/* Floating Selection Toolbar on top of canvas */}
-      <SelectionToolbar />
     </div>
   );
 }

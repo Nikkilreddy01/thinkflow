@@ -35,6 +35,39 @@ export function SelectionToolbar() {
     }
   }, [isCustomMode]);
 
+  // Handle outside click and escape key to close toolbar
+  useEffect(() => {
+    if (!activeSelection) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveSelection(null);
+      }
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      if (
+        toolbarRef.current &&
+        !toolbarRef.current.contains(e.target as unknown as HTMLElement)
+      ) {
+        // Small delay to allow button click handler to fire first
+        setTimeout(() => {
+          const sel = window.getSelection();
+          if (!sel || sel.isCollapsed) {
+            setActiveSelection(null);
+          }
+        }, 150);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleMouseDown);
+    };
+  }, [activeSelection, setActiveSelection]);
+
   if (!activeSelection || !activeSelection.rect) {
     return null;
   }
@@ -106,7 +139,7 @@ export function SelectionToolbar() {
           <button
             type="button"
             onClick={() => handleActionClick("explain")}
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl hover:bg-[#282828] text-[#d4d4d4] hover:text-white text-xs font-medium transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-[#282828] text-[#d4d4d4] hover:text-white text-xs font-medium transition-colors"
             title="Explain specifically in this context"
           >
             <HelpCircle className="w-3.5 h-3.5 text-blue-400" />
@@ -116,7 +149,7 @@ export function SelectionToolbar() {
           <button
             type="button"
             onClick={() => handleActionClick("simplify")}
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl hover:bg-[#282828] text-[#d4d4d4] hover:text-white text-xs font-medium transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-[#282828] text-[#d4d4d4] hover:text-white text-xs font-medium transition-colors"
             title="Minimal plain-English summary"
           >
             <Zap className="w-3.5 h-3.5 text-amber-400" />
@@ -126,7 +159,7 @@ export function SelectionToolbar() {
           <button
             type="button"
             onClick={() => handleActionClick("translate")}
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl hover:bg-[#282828] text-[#d4d4d4] hover:text-white text-xs font-medium transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-[#282828] text-[#d4d4d4] hover:text-white text-xs font-medium transition-colors"
             title="Linguistic and slang breakdown"
           >
             <Languages className="w-3.5 h-3.5 text-emerald-400" />
@@ -136,7 +169,7 @@ export function SelectionToolbar() {
           <button
             type="button"
             onClick={() => handleActionClick("why")}
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl hover:bg-[#282828] text-[#d4d4d4] hover:text-white text-xs font-medium transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-[#282828] text-[#d4d4d4] hover:text-white text-xs font-medium transition-colors"
             title="Why is this used here?"
           >
             <span className="font-bold text-violet-400 text-xs">?</span>
@@ -146,7 +179,7 @@ export function SelectionToolbar() {
           <button
             type="button"
             onClick={() => handleActionClick("explore")}
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl hover:bg-[#282828] text-[#d4d4d4] hover:text-white text-xs font-medium transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-[#282828] text-[#d4d4d4] hover:text-white text-xs font-medium transition-colors"
             title="Deep dive exploration"
           >
             <Compass className="w-3.5 h-3.5 text-indigo-400" />
