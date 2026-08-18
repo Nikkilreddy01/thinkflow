@@ -108,11 +108,13 @@ export function SettingsModal({}: SettingsModalProps = {}) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isSettingsOpen, setIsSettingsOpen]);
 
-  // Listen for OAuth success message from popup window
+  // Listen for OAuth success message from popup window (Google or OpenAI)
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === "THINKFLOW_OAUTH_SUCCESS") {
-        saveProviderKey("gemini", event.data.token, "gemini-3.7-flash");
+        const prov: AIProvider = event.data.provider || "openai";
+        const modelToSave = event.data.model || (prov === "gemini" ? "gemini-3.7-flash" : "gpt-4o");
+        saveProviderKey(prov, event.data.token, modelToSave);
         setSavedSuccess(true);
         setTimeout(() => setSavedSuccess(false), 2000);
       }
@@ -133,7 +135,11 @@ export function SettingsModal({}: SettingsModalProps = {}) {
 
   const existingKeyForSelected = settings.keys?.[selectedProvider];
   const maskedKeyForSelected = existingKeyForSelected
-    ? `••••${existingKeyForSelected.slice(-4)}`
+    ? existingKeyForSelected.startsWith("ya29.")
+      ? "Google OAuth Connected"
+      : existingKeyForSelected.startsWith("eyJ") || existingKeyForSelected.length > 80
+      ? "ChatGPT OAuth Connected"
+      : `••••${existingKeyForSelected.slice(-4)}`
     : null;
 
   const handleProviderChange = (newProvider: AIProvider) => {
@@ -192,17 +198,20 @@ export function SettingsModal({}: SettingsModalProps = {}) {
   };
 
   const handleConnectOAuth = () => {
-    if (selectedProvider === "gemini") {
+    if (selectedProvider === "openai") {
+      window.open(
+        "/api/auth/openai",
+        "openai_oauth",
+        "width=550,height=680,left=200,top=100"
+      );
+    } else if (selectedProvider === "gemini") {
       window.open(
         "/api/auth/google",
         "google_oauth",
-        "width=550,height=650,left=200,top=100"
+        "width=550,height=680,left=200,top=100"
       );
     } else if (selectedProvider === "openrouter") {
-      window.open(
-        "https://openrouter.ai/keys",
-        "_blank"
-      );
+      window.open("https://openrouter.ai/keys", "_blank");
     }
   };
 
@@ -228,10 +237,11 @@ export function SettingsModal({}: SettingsModalProps = {}) {
       if (provId === "mock") return;
       const key = settings.keys?.[provId];
       if (key && key.trim()) {
+        const isOAuth = key.startsWith("ya29.") || (provId === "openai" && key.length > 60);
         list.push({
           provider: provId,
           label: PROVIDER_CAPABILITIES[provId].name,
-          maskedKey: `••••${key.slice(-4)}`,
+          maskedKey: isOAuth ? "OAuth Active" : `••••${key.slice(-4)}`,
           isActive: settings.activeProvider === provId,
         });
       }
@@ -402,7 +412,7 @@ export function SettingsModal({}: SettingsModalProps = {}) {
                   type="text"
                   value={currentModel}
                   onChange={(e) => handleModelChange(e.target.value)}
-                  placeholder="e.g. gemini-3.7-flash"
+                  placeholder="e.g. gpt-4o or gemini-3.7-flash"
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 font-mono mb-2"
                 />
 
@@ -485,10 +495,14 @@ export function SettingsModal({}: SettingsModalProps = {}) {
                 <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-3">
                   <div className="flex items-start gap-2">
                     <ShieldCheck className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-                    <p className="text-xs text-zinc-300 leading-relaxed">
-                      Connect your official <strong>{currentCap.name}</strong>{" "}
-                      account via OAuth 2.0 authorization.
-                    </p>
+                    <div>
+                      <h4 className="text-xs font-semibold text-white">
+                        Official {currentCap.name} Authorization
+                      </h4>
+                      <p className="text-xs text-zinc-300 mt-0.5 leading-relaxed">
+                        Sign in directly with your {currentCap.shortName} account. An official authorization window will open.
+                      </p>
+                    </div>
                   </div>
 
                   <button
@@ -497,11 +511,11 @@ export function SettingsModal({}: SettingsModalProps = {}) {
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md transition-all active:scale-95"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    <span>Authorize with {currentCap.shortName}</span>
+                    <span>Connect with {currentCap.shortName} Login</span>
                   </button>
 
                   <p className="text-[11px] text-zinc-500 font-mono">
-                    Official authorization page will open in a secure popup.
+                    Official authorization page opens in a secure popup via PKCE OAuth 2.0.
                   </p>
                 </div>
               ) : (
@@ -581,7 +595,7 @@ export function SettingsModal({}: SettingsModalProps = {}) {
 
           {savedList.length === 0 ? (
             <p className="text-xs text-zinc-500 font-mono py-1">
-              No saved API connections yet. Configure an API key above.
+              No saved API connections yet. Configure an API key or account above.
             </p>
           ) : (
             <div className="space-y-1.5">

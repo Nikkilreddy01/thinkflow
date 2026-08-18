@@ -20,7 +20,20 @@ export async function POST(req: NextRequest) {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
         });
       } catch (err) {
-        console.warn("Google token revocation request error:", err);
+        console.warn("Google token revocation error:", err);
+      }
+    } else if (provider === "openai") {
+      try {
+        await fetch("https://auth.openai.com/oauth/revoke", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            token,
+            client_id: process.env.OPENAI_OAUTH_CLIENT_ID || "app_EMoamEEZ73f0CkXaXp7hrann",
+          }),
+        });
+      } catch (err) {
+        console.warn("OpenAI token revocation error:", err);
       }
     }
 

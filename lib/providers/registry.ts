@@ -15,14 +15,13 @@ export const PROVIDER_CAPABILITIES: Record<AIProvider, ProviderCapability> = {
   },
   openai: {
     id: "openai",
-    name: "OpenAI",
+    name: "OpenAI / ChatGPT",
     shortName: "OpenAI",
     supportsAPI: true,
-    supportsOAuth: false,
-    oauthUnavailableReason:
-      "OpenAI does not offer an official consumer OAuth login for direct API model execution. Use API key connection.",
+    supportsOAuth: true,
     apiDocsUrl: "https://platform.openai.com/api-keys",
     apiDocsLabel: "OpenAI Platform (platform.openai.com)",
+    oauthDocsUrl: "https://auth.openai.com/oauth/authorize",
     defaultModel: "gpt-4o",
   },
   anthropic: {
