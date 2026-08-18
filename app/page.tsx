@@ -8,6 +8,7 @@ import { ChatView } from "@/components/chat/ChatView";
 import { CanvasView } from "@/components/canvas/CanvasView";
 import { FocusModeModal } from "@/components/FocusModeModal";
 import { SelectionToolbar } from "@/components/SelectionToolbar";
+import { SettingsModal } from "@/components/SettingsModal";
 
 function MainApp() {
   const { viewMode } = useGraph();
@@ -38,6 +39,9 @@ function MainApp() {
 
       {/* Focus Mode Overlay (Maximized on Double Click) */}
       <FocusModeModal />
+
+      {/* Settings Modal (Configures API Keys & Models) */}
+      <SettingsModal />
 
       {/* Single Global Selection Toolbar instance */}
       <SelectionToolbar />

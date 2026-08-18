@@ -123,9 +123,9 @@ export function SettingsModal() {
     setIsSettingsOpen,
   } = useGraph();
 
-  const [selectedProvider, setSelectedProvider] = useState<AIProvider>(
-    settings.activeProvider || "gemini"
-  );
+  const [activeTab, setActiveTab] = useState<AIProvider | null>(null);
+  const selectedProvider: AIProvider = activeTab || settings.activeProvider || "gemini";
+
   const [inputKey, setInputKey] = useState("");
   const [customModelMap, setCustomModelMap] = useState<Record<string, string>>({});
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -156,7 +156,7 @@ export function SettingsModal() {
     : null;
 
   const handleProviderChange = (newProvider: AIProvider) => {
-    setSelectedProvider(newProvider);
+    setActiveTab(newProvider);
     setInputKey("");
   };
 
