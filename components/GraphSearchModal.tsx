@@ -48,36 +48,43 @@ export function GraphSearchModal({ isOpen, onClose }: GraphSearchModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-start justify-center pt-24 p-4 animate-in fade-in duration-150">
-      <div className="relative w-full max-w-2xl bg-zinc-900 border border-zinc-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[75vh]">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-start justify-center pt-20 p-4 animate-in fade-in duration-150 font-sans select-none"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-2xl bg-[#1c1c1c] border border-[#333333] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[75vh] text-[#ececec]"
+      >
         {/* Search Header */}
-        <div className="p-4 border-b border-zinc-800 flex items-center gap-3">
+        <div className="p-4 border-b border-[#2a2a2a] flex items-center gap-3 bg-[#171717]">
           <Search className="w-5 h-5 text-indigo-400 shrink-0" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search words, anchors, lyrics, questions..."
-            className="flex-1 bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none"
+            placeholder="Search words, anchors, questions, or concepts..."
+            className="flex-1 bg-transparent text-sm text-white placeholder-[#666666] focus:outline-none font-sans"
             autoFocus
           />
           {query && (
             <button
+              type="button"
               onClick={() => setQuery("")}
-              className="p-1 rounded text-zinc-500 hover:text-white"
+              className="p-1 rounded text-[#8e8e8e] hover:text-white"
             >
               <X className="w-4 h-4" />
             </button>
           )}
-          <span className="text-[10px] text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded font-mono">
-            ESC to close
+          <span className="text-[10px] text-[#8e8e8e] bg-[#242424] border border-[#333333] px-2 py-0.5 rounded font-mono">
+            ESC
           </span>
         </div>
 
         {/* Results List */}
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {filteredNodes.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500 text-xs">
+            <div className="text-center py-12 text-[#8e8e8e] text-xs font-mono">
               No matching nodes or anchors found for &ldquo;{query}&rdquo;
             </div>
           ) : (
@@ -87,12 +94,12 @@ export function GraphSearchModal({ isOpen, onClose }: GraphSearchModalProps) {
                 <div
                   key={node.id}
                   onClick={() => handleSelectResult(node.id, !isMain)}
-                  className="p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80 hover:border-indigo-500/60 hover:bg-zinc-950 cursor-pointer transition-all flex items-start justify-between group"
+                  className="p-3 rounded-2xl bg-[#141414] border border-[#2e2e2e] hover:border-indigo-500/60 hover:bg-[#181818] cursor-pointer transition-all flex items-start justify-between group"
                 >
                   <div className="space-y-1 max-w-[85%]">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                        className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
                           isMain
                             ? "bg-emerald-950/80 text-emerald-400 border border-emerald-800/50"
                             : "bg-cyan-950/80 text-cyan-300 border border-cyan-800/50"
@@ -114,13 +121,13 @@ export function GraphSearchModal({ isOpen, onClose }: GraphSearchModalProps) {
                       </p>
                     )}
 
-                    <p className="text-xs text-zinc-400 line-clamp-2">
+                    <p className="text-xs text-[#8e8e8e] line-clamp-2 leading-relaxed">
                       {node.content}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity self-center text-xs text-indigo-400">
-                    <span>Inspect</span>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity self-center text-xs text-indigo-400 font-medium">
+                    <span>Jump</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </div>
