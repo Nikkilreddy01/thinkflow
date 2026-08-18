@@ -1,21 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useGraph } from "@/context/GraphContext";
 import { PROVIDER_REGISTRY } from "@/lib/models";
 import {
   SquarePen,
   Search,
-  FolderPlus,
-  Folder,
   Trash2,
-  Sparkles,
   BookOpen,
   Box,
   PanelLeftClose,
   PanelLeft,
   Settings,
 } from "lucide-react";
+
+const STORAGE_KEY_SIDEBAR_WIDTH = "thinkflow_sidebar_width_v1";
 
 export function Sidebar() {
   const {
@@ -33,6 +32,51 @@ export function Sidebar() {
   } = useGraph();
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_SIDEBAR_WIDTH);
+        if (saved) return Math.max(200, Math.min(480, Number(saved)));
+      } catch {}
+    }
+    return 260;
+  });
+
+  const [isResizing, setIsResizing] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  const startResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = useCallback(
+    (e: MouseEvent) => {
+      if (isResizing) {
+        const newWidth = Math.max(200, Math.min(480, e.clientX));
+        setSidebarWidth(newWidth);
+        try {
+          localStorage.setItem(STORAGE_KEY_SIDEBAR_WIDTH, String(newWidth));
+        } catch {}
+      }
+    },
+    [isResizing]
+  );
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener("mousemove", resize);
+      window.addEventListener("mouseup", stopResizing);
+    }
+    return () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+    };
+  }, [isResizing, resize, stopResizing]);
 
   const providerInfo =
     PROVIDER_REGISTRY[settings.activeProvider] || PROVIDER_REGISTRY.gemini;
@@ -50,7 +94,7 @@ export function Sidebar() {
 
   if (!isSidebarOpen) {
     return (
-      <div className="hidden sm:flex flex-col items-center py-3 px-2 border-r border-[#262626] bg-[#171717] z-20 shrink-0">
+      <div className="hidden sm:flex flex-col items-center py-3.5 px-2 border-r border-[#262626] bg-[#171717] z-20 shrink-0">
         <button
           onClick={toggleSidebar}
           className="p-2 rounded-xl bg-[#212121] hover:bg-[#2e2e2e] text-[#b4b4b4] hover:text-white border border-[#2e2e2e] transition-colors mb-3"
@@ -61,7 +105,7 @@ export function Sidebar() {
 
         <button
           onClick={createNewChat}
-          className="p-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-md transition-all active:scale-95 mb-4"
+          className="p-2 rounded-xl bg-[#212121] hover:bg-[#2e2e2e] text-[#b4b4b4] hover:text-white border border-[#2e2e2e] shadow-sm transition-all active:scale-95 mb-4"
           title="New Chat"
         >
           <SquarePen className="w-4 h-4" />
@@ -81,14 +125,15 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-[260px] h-full bg-[#171717] text-[#ececec] border-r border-[#262626] flex flex-col z-20 shrink-0 select-none font-sans">
-      {/* Top Bar with Brand & Actions */}
-      <div className="pt-3.5 px-3 pb-2 flex items-center justify-between">
-        <div className="flex items-center gap-2 pl-1">
-          <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center text-white font-bold text-xs shadow-sm">
-            <Sparkles className="w-3.5 h-3.5" />
-          </div>
-          <span className="font-bold text-sm text-white tracking-tight">
+    <aside
+      ref={sidebarRef}
+      style={{ width: `${sidebarWidth}px` }}
+      className="relative h-full bg-[#171717] text-[#ececec] border-r border-[#262626] flex flex-col z-20 shrink-0 select-none font-sans"
+    >
+      {/* Top Bar with Clean Text Logo & Actions */}
+      <div className="pt-3.5 px-3.5 pb-2 flex items-center justify-between">
+        <div className="flex items-center gap-2 pl-0.5">
+          <span className="font-semibold text-sm text-white tracking-tight">
             ThinkFlow
           </span>
         </div>
@@ -149,38 +194,8 @@ export function Sidebar() {
         </button>
       </div>
 
-      {/* Projects Section */}
-      <div className="px-2 pt-3">
-        <div className="px-3 py-1 text-[11px] font-semibold text-[#8e8e8e] tracking-tight">
-          Projects
-        </div>
-        <div className="space-y-0.5 mt-0.5">
-          <button
-            type="button"
-            className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs text-[#b4b4b4] hover:text-white hover:bg-[#212121] transition-colors"
-          >
-            <FolderPlus className="w-4 h-4 shrink-0 text-[#8e8e8e]" />
-            <span>New project</span>
-          </button>
-          <button
-            type="button"
-            className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs text-[#b4b4b4] hover:text-white hover:bg-[#212121] transition-colors"
-          >
-            <Folder className="w-4 h-4 shrink-0 text-[#8e8e8e]" />
-            <span>DSA</span>
-          </button>
-          <button
-            type="button"
-            className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs text-[#b4b4b4] hover:text-white hover:bg-[#212121] transition-colors"
-          >
-            <Folder className="w-4 h-4 shrink-0 text-[#8e8e8e]" />
-            <span>German</span>
-          </button>
-        </div>
-      </div>
-
       {/* Recents List Scroll Area */}
-      <div className="flex-1 overflow-y-auto px-2 pt-3 space-y-0.5 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto px-2 pt-3 space-y-0.5 scrollbar-none">
         <div className="px-3 py-1 text-[11px] font-semibold text-[#8e8e8e] tracking-tight">
           Recents
         </div>
@@ -252,6 +267,13 @@ export function Sidebar() {
           <Settings className="w-3.5 h-3.5 text-[#8e8e8e] group-hover:text-white transition-colors" />
         </button>
       </div>
+
+      {/* Draggable Right Border Resize Handle */}
+      <div
+        onMouseDown={startResizing}
+        className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500 transition-colors z-30"
+        title="Drag to resize sidebar"
+      />
     </aside>
   );
 }

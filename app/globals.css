@@ -17,6 +17,16 @@ body {
   color: #ffffff;
 }
 
+/* Hide scrollbar utility */
+.scrollbar-none::-webkit-scrollbar {
+  display: none !important;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
 /* Custom minimal scrollbar */
 ::-webkit-scrollbar {
   width: 5px;

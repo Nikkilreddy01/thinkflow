@@ -207,8 +207,8 @@ export function ChatView() {
 
       {/* Main Chat Column */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Messages Scroll Area - Expanded Horizontally */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-6 max-w-5xl xl:max-w-6xl mx-auto w-full">
+        {/* Messages Scroll Area - Expanded Horizontally & Hidden Scrollbar */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-6 max-w-5xl xl:max-w-6xl mx-auto w-full scrollbar-none">
           {mainNodes.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 animate-in fade-in duration-200">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500/20 via-indigo-500/10 to-cyan-400/20 border border-indigo-500/30 flex items-center justify-center text-white mb-4 shadow-lg shadow-indigo-500/5">
