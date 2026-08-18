@@ -9,6 +9,7 @@ import { CanvasView } from "@/components/canvas/CanvasView";
 import { FocusModeModal } from "@/components/FocusModeModal";
 import { SelectionToolbar } from "@/components/SelectionToolbar";
 import { SettingsModal } from "@/components/SettingsModal";
+import { OnboardingModal } from "@/components/OnboardingModal";
 
 function MainApp() {
   const { viewMode } = useGraph();
@@ -42,6 +43,9 @@ function MainApp() {
 
       {/* Settings Modal (Configures API Keys & Models) */}
       <SettingsModal />
+
+      {/* Onboarding Name & Profile Modal */}
+      <OnboardingModal />
 
       {/* Single Global Selection Toolbar instance */}
       <SelectionToolbar />

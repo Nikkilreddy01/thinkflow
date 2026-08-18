@@ -42,9 +42,17 @@ export function ChatView() {
     selectedNodeId,
     createDirectBranch,
     settings,
+    userProfile,
     saveProviderKey,
     setIsSettingsOpen,
   } = useGraph();
+
+  const userInitials = (userProfile?.name || "NR")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   const [inputMessage, setInputMessage] = useState("");
   const [activeBranchingNodeId, setActiveBranchingNodeId] = useState<string | null>(null);
@@ -319,7 +327,11 @@ export function ChatView() {
                         : "justify-start w-full"
                     }`}
                   >
-                    {!isUser && (
+                    {isUser ? (
+                      <div className="w-8 h-8 rounded-full bg-[#a855f7] text-white flex items-center justify-center font-bold text-xs shrink-0 mt-1 shadow-xs order-2">
+                        {userInitials}
+                      </div>
+                    ) : (
                       <div className="w-8 h-8 rounded-full bg-[#2f2f2f] text-white border border-[#383838] flex items-center justify-center shrink-0 mt-1 shadow-xs">
                         <Bot className="w-4 h-4 text-indigo-400" />
                       </div>

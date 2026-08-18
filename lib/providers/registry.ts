@@ -1,0 +1,97 @@
+import { AIProvider } from "@/types/graph";
+import { ProviderCapability } from "@/types/provider";
+
+export const PROVIDER_CAPABILITIES: Record<AIProvider, ProviderCapability> = {
+  gemini: {
+    id: "gemini",
+    name: "Google Gemini / Vertex AI",
+    shortName: "Google",
+    supportsAPI: true,
+    supportsOAuth: true,
+    apiDocsUrl: "https://aistudio.google.com/app/apikey",
+    apiDocsLabel: "Google AI Studio (ai.google.dev)",
+    oauthDocsUrl: "https://cloud.google.com/docs/authentication",
+    defaultModel: "gemini-3.7-flash",
+  },
+  openai: {
+    id: "openai",
+    name: "OpenAI",
+    shortName: "OpenAI",
+    supportsAPI: true,
+    supportsOAuth: false,
+    oauthUnavailableReason:
+      "OpenAI does not offer an official consumer OAuth login for direct API model execution. Use API key connection.",
+    apiDocsUrl: "https://platform.openai.com/api-keys",
+    apiDocsLabel: "OpenAI Platform (platform.openai.com)",
+    defaultModel: "gpt-4o",
+  },
+  anthropic: {
+    id: "anthropic",
+    name: "Anthropic (Claude)",
+    shortName: "Claude",
+    supportsAPI: true,
+    supportsOAuth: false,
+    oauthUnavailableReason:
+      "Anthropic does not offer an official consumer OAuth flow for Claude API access. Use API key connection.",
+    apiDocsUrl: "https://console.anthropic.com/settings/keys",
+    apiDocsLabel: "Anthropic Console (console.anthropic.com)",
+    defaultModel: "claude-3-7-sonnet-latest",
+  },
+  deepseek: {
+    id: "deepseek",
+    name: "DeepSeek",
+    shortName: "DeepSeek",
+    supportsAPI: true,
+    supportsOAuth: false,
+    oauthUnavailableReason:
+      "DeepSeek API authorization is provided exclusively through developer API keys.",
+    apiDocsUrl: "https://platform.deepseek.com/api_keys",
+    apiDocsLabel: "DeepSeek Platform (platform.deepseek.com)",
+    defaultModel: "deepseek-reasoner",
+  },
+  groq: {
+    id: "groq",
+    name: "Groq LPU",
+    shortName: "Groq",
+    supportsAPI: true,
+    supportsOAuth: false,
+    oauthUnavailableReason:
+      "Groq authentication is provided via developer API keys.",
+    apiDocsUrl: "https://console.groq.com/keys",
+    apiDocsLabel: "Groq Console (console.groq.com)",
+    defaultModel: "deepseek-r1-distill-llama-70b",
+  },
+  xai: {
+    id: "xai",
+    name: "xAI (Grok)",
+    shortName: "Grok",
+    supportsAPI: true,
+    supportsOAuth: false,
+    oauthUnavailableReason:
+      "xAI Grok authorization is provided via xAI API keys.",
+    apiDocsUrl: "https://console.x.ai",
+    apiDocsLabel: "xAI Console (console.x.ai)",
+    defaultModel: "grok-3",
+  },
+  openrouter: {
+    id: "openrouter",
+    name: "OpenRouter",
+    shortName: "OpenRouter",
+    supportsAPI: true,
+    supportsOAuth: true,
+    apiDocsUrl: "https://openrouter.ai/keys",
+    apiDocsLabel: "OpenRouter Keys (openrouter.ai/keys)",
+    oauthDocsUrl: "https://openrouter.ai/docs#oauth",
+    defaultModel: "anthropic/claude-3.7-sonnet",
+  },
+  mock: {
+    id: "mock",
+    name: "ThinkFlow Smart Tutor (Built-in)",
+    shortName: "Offline",
+    supportsAPI: true,
+    supportsOAuth: false,
+    apiDocsUrl: "#",
+    apiDocsLabel: "Built-in Zero-Config Engine",
+    defaultModel: "smart-tutor",
+  },
+};

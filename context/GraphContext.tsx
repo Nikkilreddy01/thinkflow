@@ -20,6 +20,7 @@ import {
   AIProvider,
   ContextInheritancePackage,
 } from "@/types/graph";
+import { UserProfile } from "@/types/provider";
 import {
   DEMO_CONVERSATION_SAD_GAANA,
   DEMO_CONVERSATION_RECURSION,
@@ -30,6 +31,7 @@ import { buildActionPrompt, generateAIResponse } from "@/lib/ai";
 const STORAGE_KEY_SETTINGS = "thinkflow_ai_settings_v2";
 const STORAGE_KEY_CONVERSATIONS = "thinkflow_all_conversations_v3";
 const STORAGE_KEY_ACTIVE_ID = "thinkflow_active_conv_id_v3";
+const STORAGE_KEY_PROFILE = "thinkflow_user_profile_v1";
 
 const DEFAULT_SETTINGS: AISettings = {
   activeProvider: "gemini",
@@ -44,6 +46,11 @@ const DEFAULT_SETTINGS: AISettings = {
     openrouter: "anthropic/claude-3.7-sonnet",
     mock: "smart-tutor",
   },
+};
+
+const DEFAULT_PROFILE: UserProfile = {
+  name: "Nikhil Reddy",
+  hasCompletedOnboarding: true,
 };
 
 function createInitialSandbox(): ConversationRecord {
@@ -75,8 +82,12 @@ interface GraphContextType {
   searchQuery: string;
   isGenerating: boolean;
   settings: AISettings;
+  userProfile: UserProfile;
   activeDemoId: string;
   isSettingsOpen: boolean;
+
+  // Profile
+  updateUserProfile: (profile: Partial<UserProfile>) => void;
 
   // Navigation & Multi-Chat
   setIsSidebarOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
@@ -131,6 +142,27 @@ interface GraphContextType {
 const GraphContext = createContext<GraphContextType | null>(null);
 
 export function GraphProvider({ children }: { children: React.ReactNode }) {
+  // User Profile
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY_PROFILE);
+        if (stored) return JSON.parse(stored);
+      } catch {}
+    }
+    return DEFAULT_PROFILE;
+  });
+
+  const updateUserProfile = useCallback((newProfile: Partial<UserProfile>) => {
+    setUserProfile((prev) => {
+      const updated = { ...prev, ...newProfile };
+      try {
+        localStorage.setItem(STORAGE_KEY_PROFILE, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  }, []);
+
   // Load saved conversations list from localStorage
   const [conversations, setConversations] = useState<ConversationRecord[]>(() => {
     if (typeof window !== "undefined") {
@@ -605,13 +637,15 @@ export function GraphProvider({ children }: { children: React.ReactNode }) {
       setSelectedNodeId(aiNodeId);
       setIsGenerating(true);
 
-      // Context construction
+      // Context construction with User Name personalization
       const pkg: ContextInheritancePackage = {
         isMainPath: true,
         sourceNodeId: userNodeId,
         sourceNodeContent: text,
         selectedText: text,
         contextSentence: text,
+        userName: userProfile.name,
+        userAge: userProfile.age,
         ancestorChain: mainNodes.map((n) => ({
           id: n.id,
           type: n.type,
@@ -645,6 +679,7 @@ export function GraphProvider({ children }: { children: React.ReactNode }) {
       anchors,
       isGenerating,
       settings,
+      userProfile,
       syncActiveConversation,
     ]
   );
@@ -728,6 +763,8 @@ export function GraphProvider({ children }: { children: React.ReactNode }) {
         selectedText: payload.text,
         contextSentence: payload.contextSentence,
         parentExplanation: sourceNode.content,
+        userName: userProfile.name,
+        userAge: userProfile.age,
         ancestorChain: ancestors.map((a) => ({
           id: a.id,
           type: a.type,
@@ -763,6 +800,7 @@ export function GraphProvider({ children }: { children: React.ReactNode }) {
       anchors,
       isGenerating,
       settings,
+      userProfile,
       syncActiveConversation,
     ]
   );
@@ -806,6 +844,8 @@ export function GraphProvider({ children }: { children: React.ReactNode }) {
         selectedText: question,
         contextSentence: parentNode.content.slice(0, 120),
         parentExplanation: parentNode.content,
+        userName: userProfile.name,
+        userAge: userProfile.age,
         ancestorChain: ancestors.map((a) => ({
           id: a.id,
           type: a.type,
@@ -818,11 +858,13 @@ export function GraphProvider({ children }: { children: React.ReactNode }) {
 
       try {
         await generateAIResponse(pkg, settings, (chunk) => {
-          setNodes((prev) =>
-            prev.map((n) =>
+          setNodes((prev) => {
+            const updated = prev.map((n) =>
               n.id === explorationNodeId ? { ...n, content: chunk } : n
-            )
-          );
+            );
+            syncActiveConversation(updated, anchors);
+            return updated;
+          });
         });
       } catch (err) {
         console.error("Direct branch generation error:", err);
@@ -838,6 +880,7 @@ export function GraphProvider({ children }: { children: React.ReactNode }) {
       nodes,
       anchors,
       settings,
+      userProfile,
       syncActiveConversation,
     ]
   );
@@ -921,8 +964,10 @@ export function GraphProvider({ children }: { children: React.ReactNode }) {
       searchQuery,
       isGenerating,
       settings,
+      userProfile,
       activeDemoId,
       isSettingsOpen,
+      updateUserProfile,
       setIsSidebarOpen,
       toggleSidebar,
       createNewChat,
@@ -970,8 +1015,10 @@ export function GraphProvider({ children }: { children: React.ReactNode }) {
       searchQuery,
       isGenerating,
       settings,
+      userProfile,
       activeDemoId,
       isSettingsOpen,
+      updateUserProfile,
       toggleSidebar,
       createNewChat,
       switchConversation,

@@ -27,9 +27,17 @@ export function Sidebar() {
     toggleSidebar,
     setIsSettingsOpen,
     settings,
+    userProfile,
     searchQuery,
     setSearchQuery,
   } = useGraph();
+
+  const userInitials = (userProfile?.name || "NR")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
@@ -248,11 +256,11 @@ export function Sidebar() {
           <div className="flex items-center gap-2.5 truncate">
             {/* User Avatar Circle */}
             <div className="w-7 h-7 rounded-full bg-[#a855f7] text-white flex items-center justify-center font-bold text-[11px] shrink-0 shadow-xs">
-              NR
+              {userInitials}
             </div>
             <div className="truncate">
               <span className="text-xs font-semibold text-white block truncate leading-tight">
-                Nikhil Reddy
+                {userProfile?.name || "Nikhil Reddy"}
               </span>
               <span className="text-[10px] text-[#8e8e8e] flex items-center gap-1 font-mono">
                 <span

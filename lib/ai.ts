@@ -76,6 +76,10 @@ export function constructContextualPrompt(
     lines.push(
       "Format your response cleanly in markdown with structured sections, bullet points, and highlight key terms/concepts in bold so the user can easily select and explore them."
     );
+
+    if (pkg.userName) {
+      lines.push(`The user's name is ${pkg.userName}${pkg.userAge ? ` (Age: ${pkg.userAge})` : ""}. Address them naturally when appropriate.`);
+    }
     lines.push("");
 
     if (pkg.ancestorChain.length > 0) {

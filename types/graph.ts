@@ -134,6 +134,8 @@ export interface ContextInheritancePackage {
   contextSentence: string;
   parentExplanation?: string;
   rootPrompt?: string;
+  userName?: string;
+  userAge?: number;
   ancestorChain: Array<{
     id: string;
     type: NodeType;
