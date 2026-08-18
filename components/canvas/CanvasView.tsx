@@ -186,6 +186,8 @@ function CanvasFlowInner() {
   const currentProviderInfo =
     PROVIDER_REGISTRY[settings.activeProvider] || PROVIDER_REGISTRY.gemini;
 
+  const currentKey = settings.keys?.[settings.activeProvider];
+
   const currentModelId =
     settings.models?.[settings.activeProvider] ||
     currentProviderInfo.defaultModel;
@@ -554,10 +556,13 @@ function CanvasFlowInner() {
                 <button
                   type="button"
                   onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#383838] hover:bg-[#444444] text-[11px] font-medium text-[#ececec] transition-colors border border-transparent hover:border-[#555555]"
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#383838] hover:bg-[#444444] text-xs font-medium text-[#ececec] transition-colors border border-transparent hover:border-[#555555]"
                   title="Select Model"
                 >
                   <span className="font-semibold">{activeModelMeta.name}</span>
+                  <span className="text-[10px] text-[#8e8e8e] font-mono">
+                    ({currentKey?.startsWith("ya29.") ? "OAuth" : currentKey ? "API" : "Offline"})
+                  </span>
                   <ChevronDown className="w-3 h-3 text-[#8e8e8e]" />
                 </button>
 

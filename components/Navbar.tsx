@@ -34,6 +34,10 @@ export function Navbar() {
   const currentProvider =
     PROVIDER_REGISTRY[settings.activeProvider] || PROVIDER_REGISTRY.gemini;
 
+  const currentKey = settings.keys?.[settings.activeProvider];
+  const isOAuth = currentKey && currentKey.startsWith("ya29.");
+  const hasConnection = currentKey && currentKey.trim().length > 0;
+
   const handleShareClick = () => {
     if (typeof window !== "undefined") {
       try {
@@ -77,33 +81,43 @@ export function Navbar() {
           </div>
         )}
 
-        {/* Provider Switcher Dropdown (e.g. Google > / OpenAI >) */}
+        {/* Provider Switcher Dropdown */}
         <div className="relative">
           <button
             type="button"
             onClick={() => setIsProviderMenuOpen(!isProviderMenuOpen)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-[#2e2e2e] text-xs font-semibold text-[#ececec] transition-colors border border-transparent hover:border-[#383838]"
-            title="Switch AI Provider"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-[#2e2e2e] text-xs font-semibold text-[#ececec] transition-colors border border-transparent hover:border-[#383838]"
+            title="Switch AI Provider Connection"
           >
-            <Cpu className="w-3.5 h-3.5 text-indigo-400" />
-            <span>{currentProvider.shortName}</span>
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  hasConnection ? "bg-emerald-400 animate-pulse" : "bg-zinc-500"
+                }`}
+              />
+              <Cpu className="w-3.5 h-3.5 text-indigo-400" />
+              <span>{currentProvider.shortName}</span>
+              <span className="text-[10px] text-[#8e8e8e] font-mono hidden sm:inline">
+                ({isOAuth ? "OAuth" : hasConnection ? "API" : "offline"})
+              </span>
+            </div>
             <ChevronDown className="w-3.5 h-3.5 text-[#8e8e8e]" />
           </button>
 
           {/* Provider Dropdown Popup */}
           {isProviderMenuOpen && (
-            <div className="absolute top-full left-0 mt-1.5 w-60 rounded-2xl bg-[#1e1e1e] border border-[#333333] shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 font-sans">
+            <div className="absolute top-full left-0 mt-1.5 w-64 rounded-2xl bg-[#1e1e1e] border border-[#333333] shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 font-sans">
               <div className="px-2.5 py-1 text-[10px] font-semibold text-[#8e8e8e] uppercase tracking-wider">
-                Select AI Provider
+                Connected AI Providers
               </div>
               <div className="space-y-0.5 mt-1">
                 {Object.values(PROVIDER_REGISTRY)
                   .filter((p) => p.id !== "mock")
                   .map((p) => {
                     const isSelected = settings.activeProvider === p.id;
-                    const hasKey =
-                      settings.keys?.[p.id] &&
-                      settings.keys[p.id]!.trim().length > 0;
+                    const key = settings.keys?.[p.id];
+                    const provOAuth = key && key.startsWith("ya29.");
+                    const provHasKey = key && key.trim().length > 0;
 
                     return (
                       <button
@@ -119,14 +133,19 @@ export function Navbar() {
                         <div className="flex items-center gap-2">
                           <span
                             className={`w-1.5 h-1.5 rounded-full ${
-                              hasKey ? "bg-emerald-400" : "bg-zinc-600"
+                              provHasKey ? "bg-emerald-400" : "bg-zinc-600"
                             }`}
                           />
                           <span>{p.name}</span>
                         </div>
-                        {isSelected && (
-                          <Check className="w-3.5 h-3.5 text-indigo-400" />
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-[#8e8e8e] font-mono">
+                            {provOAuth ? "OAuth" : provHasKey ? "API" : "no key"}
+                          </span>
+                          {isSelected && (
+                            <Check className="w-3.5 h-3.5 text-indigo-400" />
+                          )}
+                        </div>
                       </button>
                     );
                   })}
@@ -139,10 +158,10 @@ export function Navbar() {
                     setIsProviderMenuOpen(false);
                     setIsSettingsOpen(true);
                   }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs text-indigo-300 hover:text-indigo-200 hover:bg-[#282828] transition-colors"
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs text-indigo-300 hover:text-indigo-200 hover:bg-[#282828] transition-colors font-medium"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>Configure API Keys...</span>
+                  <span>Configure API Keys &amp; OAuth...</span>
                 </button>
               </div>
             </div>

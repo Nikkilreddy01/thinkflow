@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     const {
       provider = "gemini",
       apiKey = "",
-      model = "gemini-2.0-flash",
+      model = "gemini-3.7-flash",
       pkg,
     }: {
       provider: AIProvider;
@@ -41,14 +41,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Google Gemini Provider
+    const cleanKey = apiKey.trim();
+    const isOAuthToken = cleanKey.startsWith("ya29.");
+
+    // 1. Google Gemini Provider (Supports API Key and Official OAuth Bearer Tokens)
     if (provider === "gemini") {
-      let activeModel = (model || "gemini-2.0-flash").replace(/^models\//, "").trim();
-      let url = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:streamGenerateContent?alt=sse&key=${apiKey}`;
+      let activeModel = (model || "gemini-3.7-flash").replace(/^models\//, "").trim();
+      let url = isOAuthToken
+        ? `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:streamGenerateContent?alt=sse`
+        : `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:streamGenerateContent?alt=sse&key=${cleanKey}`;
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (isOAuthToken) {
+        headers["Authorization"] = `Bearer ${cleanKey}`;
+      } else {
+        headers["x-goog-api-key"] = cleanKey;
+      }
 
       let res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           contents: [
             {
@@ -63,13 +78,16 @@ export async function POST(req: NextRequest) {
         }),
       });
 
-      // If model not found (e.g. 404), fallback to gemini-2.0-flash or gemini-1.5-flash
+      // Fallback if model not found
       if (!res.ok && (res.status === 404 || res.status === 400) && activeModel !== "gemini-2.0-flash") {
         activeModel = "gemini-2.0-flash";
-        url = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:streamGenerateContent?alt=sse&key=${apiKey}`;
+        url = isOAuthToken
+          ? `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:streamGenerateContent?alt=sse`
+          : `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:streamGenerateContent?alt=sse&key=${cleanKey}`;
+
         res = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({
             contents: [
               {
@@ -93,10 +111,15 @@ export async function POST(req: NextRequest) {
           parsedErr = jsonErr.error?.message || errorText;
         } catch {}
 
+        const userMessage =
+          res.status === 401
+            ? isOAuthToken
+              ? "OAuth access token expired or revoked. Please reconnect in Settings."
+              : "Invalid Google API key. Please verify your key in Settings."
+            : `Google Gemini error (${res.status}): ${parsedErr}`;
+
         return new Response(
-          JSON.stringify({
-            error: `Gemini API error (${res.status}): ${parsedErr}`,
-          }),
+          JSON.stringify({ error: userMessage }),
           { status: res.status, headers: { "Content-Type": "application/json" } }
         );
       }
@@ -170,12 +193,12 @@ export async function POST(req: NextRequest) {
 
     // 2. Anthropic (Claude)
     if (provider === "anthropic") {
-      const activeModel = model || "claude-3-5-sonnet-latest";
+      const activeModel = model || "claude-3-7-sonnet-latest";
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": apiKey,
+          "x-api-key": cleanKey,
           "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
@@ -190,7 +213,10 @@ export async function POST(req: NextRequest) {
         const errorText = await res.text();
         return new Response(
           JSON.stringify({
-            error: `Anthropic API error (${res.status}): ${errorText}`,
+            error:
+              res.status === 401
+                ? "Invalid Anthropic API key. Please check your credentials in Settings."
+                : `Anthropic API error (${res.status}): ${errorText}`,
           }),
           { status: res.status, headers: { "Content-Type": "application/json" } }
         );
@@ -254,20 +280,20 @@ export async function POST(req: NextRequest) {
 
     // 3. OpenAI Compatible Providers (OpenAI, DeepSeek, Groq, xAI, OpenRouter)
     let baseUrl = "https://api.openai.com/v1/chat/completions";
-    let defaultModel = "gpt-4o-mini";
+    let defaultModel = "gpt-4o";
 
     if (provider === "deepseek") {
       baseUrl = "https://api.deepseek.com/chat/completions";
-      defaultModel = "deepseek-chat";
+      defaultModel = "deepseek-reasoner";
     } else if (provider === "groq") {
       baseUrl = "https://api.groq.com/openai/v1/chat/completions";
-      defaultModel = "llama-3.3-70b-versatile";
+      defaultModel = "deepseek-r1-distill-llama-70b";
     } else if (provider === "xai") {
       baseUrl = "https://api.x.ai/v1/chat/completions";
-      defaultModel = "grok-beta";
+      defaultModel = "grok-3";
     } else if (provider === "openrouter") {
       baseUrl = "https://openrouter.ai/api/v1/chat/completions";
-      defaultModel = "google/gemini-2.0-flash-exp:free";
+      defaultModel = "anthropic/claude-3.7-sonnet";
     }
 
     const activeModel = model || defaultModel;
@@ -276,7 +302,7 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${cleanKey}`,
       },
       body: JSON.stringify({
         model: activeModel,
@@ -296,7 +322,10 @@ export async function POST(req: NextRequest) {
       const errorText = await res.text();
       return new Response(
         JSON.stringify({
-          error: `${provider.toUpperCase()} API error (${res.status}): ${errorText}`,
+          error:
+            res.status === 401
+              ? `Invalid ${provider.toUpperCase()} API key. Please check your credentials in Settings.`
+              : `${provider.toUpperCase()} API error (${res.status}): ${errorText}`,
         }),
         { status: res.status, headers: { "Content-Type": "application/json" } }
       );
