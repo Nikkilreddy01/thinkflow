@@ -461,7 +461,7 @@ function CanvasFlowInner() {
       </ReactFlow>
 
       {/* Floating Interactive Bottom Chat Capsule inside Canvas View */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-40">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-4xl xl:max-w-5xl px-4 z-40">
         {/* Attached Files Bar */}
         {uploadedFiles.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2 p-2 rounded-2xl bg-[#1e1e1e] border border-[#333333] shadow-xl">
